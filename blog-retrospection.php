@@ -1,17 +1,16 @@
 <?php
 /*
-Plugin Name: Blog Summary
-Plugin URI: https://wordpress.org/extend/plugins/2013-summary/ TODO Änderung derr Adresse
-Description: Get a brief summary of your blog. How many posts, how many pages, who has commented -
-             all data on one page and with the possibility to create a post.
-Version: 0.1.1
-Author: Addapted to 2013 by Elias Kirchgässner from Tomasz Topa (http://tomasz.topa.pl)
+Plugin Name: Blog Retrospection
+Plugin URI: https://wordpress.org/extend/plugins/blog-retrospection/ TODO Änderung derr Adresse
+Description: This plugin generates a brief retrospection of your blog for a given timeframe (only year available in first release).
+             See how many posts you wrote during this time, which were the most popular, who was the most active commenter etc.
+             And then share the stats with your readers - copy the data to a new draft with a single click.
+Version: 0.0.1
+Author: Lioman
 Author URI: http://www.lioman.de
 License: GPL v2 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
-	Copyright 2013  Elias Kirchgässner (email: blog [at] lioman.de)
-
-     Original code from Tomasz Topa  (email : wpsummary [at] topa.pl)
+    Copyright 2014  Elias Kirchgässner (email: dev [at] lioman.de)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
@@ -26,120 +25,120 @@ License: GPL v2 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-Min WP Version: 3.5
-Max WP Version: 3.8
+Min WP Version: 4.0
+Max WP Version: 4.1
 */
 
-add_action('admin_menu', 'y2013summary_menu_add');
+add_action('admin_menu', 'retro_menu_add');
 
-$y2013summary_translations = array('en');
-$y2013summary_lang = substr(WPLANG, 0, 2);
-if (!in_array($y2013summary_lang, $y2013summary_translations)) {
-    $y2013summary_lang = 'en';
+$retro_translations = array('en');
+$retro_lang = substr(WPLANG, 0, 2);
+if (!in_array($retro_lang, $retro_translations)) {
+    $retro_lang = 'en';
 }
 
 /* Translation */
 
-$y2013summary_trans = array();
-$y2013summary_trans[1] = array(
+$retro_trans = array();
+$retro_trans[1] = array(
     'en' => '2013 Summary - whole year of blogging summarized'
 );
-$y2013summary_trans[2] = array(
+$retro_trans[2] = array(
     'en' => 'This plugin <strong>generates a brief summary of your blog</strong> for one year.'
 );
-$y2013summary_trans[3] = array(
+$retro_trans[3] = array(
     'en' => 'See how many posts you wrote durig the ending year,  which were the most popular, who was the most active commenter etc.'
 );
-$y2013summary_trans[4] = array(
+$retro_trans[4] = array(
     'en' => 'And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.'
 );
-$y2013summary_trans[5] = array(
+$retro_trans[5] = array(
     'en' => 'Summary of 2013'
 );
-$y2013summary_trans[6] = array(
+$retro_trans[6] = array(
     'en' => '<strong>A draft of the new post has been created</strong>. You can now '
 );
-$y2013summary_trans[7] = array(
+$retro_trans[7] = array(
     'en' => 'edit it'
 );
-$y2013summary_trans[8] = array(
+$retro_trans[8] = array(
     'en' => 'and then publish.'
 );
-$y2013summary_trans[9] = array(
+$retro_trans[9] = array(
     'en' => 'Regenerate summary'
 );
-$y2013summary_trans[10] = array(
+$retro_trans[10] = array(
     'en' => 'Generate summary'
 );
-$y2013summary_trans[11] = array(
+$retro_trans[11] = array(
     'en' => 'Questions? Mail me: blog@lioman.de or <a href="http://twitter.com/lioman" rel="nofollow">@lioman</a>. You can also check out my blog at <a href="http://www.lioman.de">www.lioman.de</a>'
 );
-$y2013summary_trans[12] = array(
+$retro_trans[12] = array(
     'en' => 'comments'
 );
-$y2013summary_trans[13] = array(
+$retro_trans[13] = array(
     'en' => 'posts'
 );
-$y2013summary_trans[14] = array(
+$retro_trans[14] = array(
     'en' => 'In 2013 you wrote <strong>%s</strong> posts and added <strong>%s pages</strong> to this blog, with <strong>%s attachments</strong> in total.'
 );
-$y2013summary_trans[15] = array(
+$retro_trans[15] = array(
     'en' => 'The number of posts in each month'
 );
-$y2013summary_trans[16] = array(
+$retro_trans[16] = array(
     'en' => 'The number of posts in each day of week'
 );
-$y2013summary_trans[17] = array(
+$retro_trans[17] = array(
     'en' => 'At what hours you publish new posts'
 );
-$y2013summary_trans[18] = array(
+$retro_trans[18] = array(
     'en' => 'In 2013 your posts were commented <strong>%s</strong> times, from which <strong>%s</strong> comments (%s percent) were written by registered users/authors.'
 );
-$y2013summary_trans[19] = array(
+$retro_trans[19] = array(
     'en' => 'TOP 10 commenters in 2013'
 );
-$y2013summary_trans[20] = array(
+$retro_trans[20] = array(
     'en' => 'TOP 10 most commented posts in 2013'
 );
-$y2013summary_trans[21] = array(
+$retro_trans[21] = array(
     'en' => 'The number of comments in each month'
 );
-$y2013summary_trans[22] = array(
+$retro_trans[22] = array(
     'en' => 'On what days people comment'
 );
-$y2013summary_trans[23] = array(
+$retro_trans[23] = array(
     'en' => 'At what hours people comment'
 );
-$y2013summary_trans[24] = array(
+$retro_trans[24] = array(
     'en' => '<strong>This blog has many authors.</strong> Here is the number of posts each one wrote:'
 );
-$y2013summary_trans[25] = array(
+$retro_trans[25] = array(
     'en' => 'And the number of comments each one wrote:'
 );
-$y2013summary_trans[26] = array(
+$retro_trans[26] = array(
     'en' => 'Summary generated by <a href="https://wordpress.org/extend/plugins/2013-summary/">2013 Summary plugin</a>'
 );
-$y2013summary_trans[27] = array(
+$retro_trans[27] = array(
     'en' => 'Create a new blog post with this summary'
 );
-$y2013summary_trans[28] = array(
+$retro_trans[28] = array(
     'en' => '2013 Summary'
 );
-$y2013summary_trans[29] = array(
+$retro_trans[29] = array(
     'en' => array('your', 'you', '<p>&nbsp;</p>')
 );
-$y2013summary_trans[30] = array(
+$retro_trans[30] = array(
     'en' => array('the', 'I', '')
 );
 
-function y2013summary_menu_add()
+function retro_menu_add()
 {
-    add_submenu_page('index.php', '2013 Summary', '2013 Summary', 'read', 'y2013summary', 'y2013summary');
+    add_submenu_page('index.php', '2013 Summary', '2013 Summary', 'read', 'retro', 'retro');
 }
 
-function y2013summary()
+function retro()
 {
-    global $y2013summary_trans, $y2013summary_lang, $y2013summary_translations;
+    global $retro_trans, $retro_lang, $retro_translations;
     if (!current_user_can('read')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
@@ -148,37 +147,37 @@ function y2013summary()
     echo '<div class="wrap">
 
 	<style type="text/css">
-	.y2013summaryList{font-size:11px;margin-left:3em;list-style:disc;}
-	#y2013summaryDonate{width:292px;height:420;position:absolute;top:5px;right:5px;float:right;text-align:center;}
-	.y2013summaryTable{margin: 0 0 0 10px;}
-	.y2013summaryTable td{font-size:11px;line-height:2em;padding:0.25em;overflow:hidden;}
-	.y2013summaryCol1{float:left;width:300px;overflow:hidden;}
-	.y2013summaryCol2{float:left;width:260px;overflow:hidden;}
-	.y2013summaryClear{clear:both;}
+	.retroList{font-size:11px;margin-left:3em;list-style:disc;}
+	#retroDonate{width:292px;height:420;position:absolute;top:5px;right:5px;float:right;text-align:center;}
+	.retroTable{margin: 0 0 0 10px;}
+	.retroTable td{font-size:11px;line-height:2em;padding:0.25em;overflow:hidden;}
+	.retroCol1{float:left;width:300px;overflow:hidden;}
+	.retroCol2{float:left;width:260px;overflow:hidden;}
+	.retroClear{clear:both;}
 	</style>
 
-	<h2>' . $y2013summary_trans[1][$y2013summary_lang] . '</h2>
-	<div id="y2013summaryDonate">
+	<h2>' . $retro_trans[1][$retro_lang] . '</h2>
+	<div id="retroDonate">
 	<iframe src="http://tools.flattr.net/widgets/thing.html?thing=1093328" width="292" height="420"></iframe>
 
 	</div>
-	<p>' . $y2013summary_trans[2][$y2013summary_lang] . '</p>
-	<p>' . $y2013summary_trans[3][$y2013summary_lang] . '</p>
-	<p>' . $y2013summary_trans[4][$y2013summary_lang] . '</p>
+	<p>' . $retro_trans[2][$retro_lang] . '</p>
+	<p>' . $retro_trans[3][$retro_lang] . '</p>
+	<p>' . $retro_trans[4][$retro_lang] . '</p>
 
 
 
 	';
 
 
-    if ($_POST['y2013summary_generate'] == true) {
-        y2013summary_generate();
+    if ($_POST['retro_generate'] == true) {
+        retro_generate();
 
-    } elseif ($_POST['y2013summary_draft'] == true) {
+    } elseif ($_POST['retro_draft'] == true) {
 
         $my_post = array(
-            'post_title' => $y2013summary_trans[5][$y2013summary_lang],
-            'post_content' => base64_decode($_POST['y2013summary_draftcontent']),
+            'post_title' => $retro_trans[5][$retro_lang],
+            'post_content' => base64_decode($_POST['retro_draftcontent']),
             'post_status' => 'draft',
             'post_author' => $user_ID,
         );
@@ -186,269 +185,269 @@ function y2013summary()
 // Insert the post into the database
         $postid = wp_insert_post($my_post);
 
-        echo '<p>&nbsp;</p><div class="updated"><p>' . $y2013summary_trans[6][$y2013summary_lang] . ' <a href="' . get_bloginfo(
+        echo '<p>&nbsp;</p><div class="updated"><p>' . $retro_trans[6][$retro_lang] . ' <a href="' . get_bloginfo(
                 'wpurl'
-            ) . '/wp-admin/post.php?post=' . $postid . '&action=edit">' . $y2013summary_trans[7][$y2013summary_lang] . '</a> ' . $y2013summary_trans[8][$y2013summary_lang] . '</p></div>';
-        echo '<p>&nbsp;</p><p>&nbsp;</p><form name="y2013summary_generate" method="post" action="">
-	<input type="submit" name="generateStats" class="button-primary" value="' . $y2013summary_trans[9][$y2013summary_lang] . '" />
-	<input type="hidden" name="y2013summary_generate" value="TRUE" />
+            ) . '/wp-admin/post.php?post=' . $postid . '&action=edit">' . $retro_trans[7][$retro_lang] . '</a> ' . $retro_trans[8][$retro_lang] . '</p></div>';
+        echo '<p>&nbsp;</p><p>&nbsp;</p><form name="retro_generate" method="post" action="">
+	<input type="submit" name="generateStats" class="button-primary" value="' . $retro_trans[9][$retro_lang] . '" />
+	<input type="hidden" name="retro_generate" value="TRUE" />
 	</form>';
 
     } else {
-        echo '<form name="y2013summary_generate" method="post" action="">
-	<input type="submit" name="generateStats" class="button-primary" value="' . $y2013summary_trans[10][$y2013summary_lang] . '" />
-	<input type="hidden" name="y2013summary_generate" value="TRUE" />
+        echo '<form name="retro_generate" method="post" action="">
+	<input type="submit" name="generateStats" class="button-primary" value="' . $retro_trans[10][$retro_lang] . '" />
+	<input type="hidden" name="retro_generate" value="TRUE" />
 	</form>';
 
     }
 
-    echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . $y2013summary_trans[11][$y2013summary_lang] . '</small></p>';
+    echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . $retro_trans[11][$retro_lang] . '</small></p>';
     echo '</div>';
 }
 
-function y2013summary_generate()
+function retro_generate()
 {
-    global $wpdb, $y2013summary_trans, $y2013summary_lang, $y2013summary_translations;
+    global $wpdb, $retro_trans, $retro_lang, $retro_translations;
 
 
-    $y2013summary_noposts = $wpdb->get_row(
+    $retro_noposts = $wpdb->get_row(
         "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=2013 and post_type='post' and post_status='publish'"
     );
 
-    $y2013summary_nopages = $wpdb->get_row(
+    $retro_nopages = $wpdb->get_row(
         "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=2013 and post_type='page' and post_status='publish'"
     );
 
-    $y2013summary_noattach = $wpdb->get_row(
+    $retro_noattach = $wpdb->get_row(
         "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=2013 and $wpdb->posts.post_type='attachment'"
     );
 
-    $y2013summary_noauthors = $wpdb->get_row("SELECT count($wpdb->users.ID) as howmany FROM $wpdb->users");
+    $retro_noauthors = $wpdb->get_row("SELECT count($wpdb->users.ID) as howmany FROM $wpdb->users");
 
-    $y2013summary_nocomm = $wpdb->get_row(
+    $retro_nocomm = $wpdb->get_row(
         "SELECT count($wpdb->comments.comment_ID) as howmany FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1"
     );
 
-    $y2013summary_commbyauthors = $wpdb->get_results(
+    $retro_commbyauthors = $wpdb->get_results(
         "SELECT count($wpdb->comments.comment_ID) as howmany, $wpdb->comments.user_id FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1 and $wpdb->comments.user_id>0 group by $wpdb->comments.user_id"
     );
 
-    $y2013summary_nocommr = $wpdb->get_row(
+    $retro_nocommr = $wpdb->get_row(
         "SELECT count($wpdb->comments.comment_ID) as howmany FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and comment_type!='trackback' and $wpdb->comments.user_id>0 and $wpdb->comments.comment_approved=1"
     );
 
-    $y2013summary_months = $wpdb->get_results(
+    $retro_months = $wpdb->get_results(
         "SELECT count($wpdb->posts.ID) as howmany, month($wpdb->posts.post_date) as postmonth FROM $wpdb->posts WHERE year(post_date)=2013 and $wpdb->posts.post_type='post' group by postmonth order by postmonth asc"
     );
 
-    $y2013summary_hours = $wpdb->get_results(
+    $retro_hours = $wpdb->get_results(
         "SELECT count($wpdb->posts.ID) as howmany, hour($wpdb->posts.post_date) as posthour FROM $wpdb->posts WHERE year(post_date)=2013 and $wpdb->posts.post_type='post' group by posthour order by posthour asc"
     );
 
 
-    $y2013summary_days = $wpdb->get_results(
+    $retro_days = $wpdb->get_results(
         "SELECT count($wpdb->posts.ID) as howmany, dayname($wpdb->posts.post_date) as postday, dayofweek($wpdb->posts.post_date) as postday2 FROM $wpdb->posts WHERE year(post_date)=2013 and $wpdb->posts.post_type='post' group by postday order by postday2 asc"
     );
 
 
-    $y2013summary_postsbyauthors = $wpdb->get_results(
+    $retro_postsbyauthors = $wpdb->get_results(
         "SELECT count($wpdb->posts.ID) as howmany, $wpdb->posts.post_author FROM $wpdb->posts WHERE year(post_date)=2013 and $wpdb->posts.post_type='post' group by $wpdb->posts.post_author order by howmany desc"
     );
 
-    $y2013summary_topcom = $wpdb->get_results(
+    $retro_topcom = $wpdb->get_results(
         "SELECT $wpdb->posts.comment_count, $wpdb->posts.post_title, $wpdb->posts.ID FROM $wpdb->posts WHERE year($wpdb->posts.post_date)=2013 and $wpdb->posts.post_type='post' order by comment_count desc limit 10"
     );
 
-    $y2013summary_commenters = $wpdb->get_results(
+    $retro_commenters = $wpdb->get_results(
         "SELECT count($wpdb->comments.comment_ID) as howmany,$wpdb->comments.comment_author FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and comment_type!='trackback' and $wpdb->comments.comment_approved=1 and user_id=0 group by $wpdb->comments.comment_author order by howmany desc limit 10"
     );
 
-    $y2013summary_commentsday = $wpdb->get_results(
+    $retro_commentsday = $wpdb->get_results(
         "SELECT count($wpdb->comments.comment_ID) as howmany, dayname($wpdb->comments.comment_date) as commentday, dayofweek($wpdb->comments.comment_date) as commentday2 FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and comment_type!='trackback' and $wpdb->comments.comment_approved=1 group by commentday order by commentday2 asc"
     );
 
-    $y2013summary_commentmonths = $wpdb->get_results(
+    $retro_commentmonths = $wpdb->get_results(
         "SELECT count($wpdb->comments.comment_ID) as howmany, month($wpdb->comments.comment_date) as commentmonth FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and comment_type!='trackback' and $wpdb->comments.comment_approved=1 group by commentmonth order by commentmonth asc"
     );
 
 
-    $y2013summary_commenthours = $wpdb->get_results(
+    $retro_commenthours = $wpdb->get_results(
         "SELECT count($wpdb->comments.comment_ID) as howmany, hour($wpdb->comments.comment_date) as commenthour FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=2013 and comment_type!='trackback' and $wpdb->comments.comment_approved=1 group by commenthour order by commenthour asc"
     );
 
-    foreach ($y2013summary_commenters as $y2013summary_commenter) {
-        $y2013summary_commentdata .= '<li>' . $y2013summary_commenter->comment_author . ': <strong>' . $y2013summary_commenter->howmany . '</strong> ' . $y2013summary_trans[12][$y2013summary_lang] . '</li>';
+    foreach ($retro_commenters as $retro_commenter) {
+        $retro_commentdata .= '<li>' . $retro_commenter->comment_author . ': <strong>' . $retro_commenter->howmany . '</strong> ' . $retro_trans[12][$retro_lang] . '</li>';
     }
 
-    foreach ($y2013summary_months as $y2013summary_month) {
-        $y2013summary_monthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                date("F", mktime(0, 0, 0, $y2013summary_month->postmonth, 1, 2013))
-            ) . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_month->howmany / $y2013summary_noposts->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_month->howmany . ' (' . round(
-                $y2013summary_month->howmany / $y2013summary_noposts->howmany * 100,
+    foreach ($retro_months as $retro_month) {
+        $retro_monthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                date("F", mktime(0, 0, 0, $retro_month->postmonth, 1, 2013))
+            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_month->howmany / $retro_noposts->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_month->howmany . ' (' . round(
+                $retro_month->howmany / $retro_noposts->howmany * 100,
                 2
             ) . '%)</td></tr>';
     }
 
-    foreach ($y2013summary_commentmonths as $y2013summary_commentmonth) {
-        $y2013summary_commentmonthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                date("F", mktime(0, 0, 0, $y2013summary_commentmonth->commentmonth, 1, 2013))
-            ) . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_commentmonth->howmany / $y2013summary_nocomm->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_commentmonth->howmany . ' (' . round(
-                $y2013summary_commentmonth->howmany / $y2013summary_nocomm->howmany * 100,
+    foreach ($retro_commentmonths as $retro_commentmonth) {
+        $retro_commentmonthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                date("F", mktime(0, 0, 0, $retro_commentmonth->commentmonth, 1, 2013))
+            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_commentmonth->howmany / $retro_nocomm->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_commentmonth->howmany . ' (' . round(
+                $retro_commentmonth->howmany / $retro_nocomm->howmany * 100,
                 2
             ) . '%)</td></tr>';
     }
 
-    foreach ($y2013summary_hours as $y2013summary_hour) {
-        $y2013summary_hourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $y2013summary_hour->posthour . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_hour->howmany / $y2013summary_noposts->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_hour->howmany . ' (' . round(
-                $y2013summary_hour->howmany / $y2013summary_noposts->howmany * 100,
+    foreach ($retro_hours as $retro_hour) {
+        $retro_hourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $retro_hour->posthour . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_hour->howmany / $retro_noposts->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_hour->howmany . ' (' . round(
+                $retro_hour->howmany / $retro_noposts->howmany * 100,
                 2
             ) . '%)</td></tr>';
     }
 
-    foreach ($y2013summary_commenthours as $y2013summary_commenthour) {
-        $y2013summary_commenthourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $y2013summary_commenthour->commenthour . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_commenthour->howmany / $y2013summary_nocomm->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_commenthour->howmany . ' (' . round(
-                $y2013summary_commenthour->howmany / $y2013summary_nocomm->howmany * 100,
+    foreach ($retro_commenthours as $retro_commenthour) {
+        $retro_commenthourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $retro_commenthour->commenthour . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_commenthour->howmany / $retro_nocomm->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_commenthour->howmany . ' (' . round(
+                $retro_commenthour->howmany / $retro_nocomm->howmany * 100,
                 2
             ) . '%)</td></tr>';
     }
 
-    foreach ($y2013summary_days as $y2013summary_day) {
+    foreach ($retro_days as $retro_day) {
 
-        $y2013summary_daydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                $y2013summary_day->postday
-            ) . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_day->howmany / $y2013summary_noposts->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_day->howmany . ' (' . round(
-                $y2013summary_day->howmany / $y2013summary_noposts->howmany * 100,
-                2
-            ) . '%)</td></tr>';
-
-    }
-
-    foreach ($y2013summary_commentsday as $y2013summary_commentday) {
-
-        $y2013summary_commentdaydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                $y2013summary_commentday->commentday
-            ) . ':</td><td><div class="y2013summaryChartBar" style="width:' . round(
-                $y2013summary_commentday->howmany / $y2013summary_nocomm->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $y2013summary_commentday->howmany . ' (' . round(
-                $y2013summary_commentday->howmany / $y2013summary_nocomm->howmany * 100,
+        $retro_daydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                $retro_day->postday
+            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_day->howmany / $retro_noposts->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_day->howmany . ' (' . round(
+                $retro_day->howmany / $retro_noposts->howmany * 100,
                 2
             ) . '%)</td></tr>';
 
     }
 
-    foreach ($y2013summary_topcom as $y2013summary_post) {
-        $y2013summary_postdata .= '<li><a href="' . get_permalink(
-                $y2013summary_post->ID
-            ) . '">' . $y2013summary_post->post_title . '</a>: <strong>' . $y2013summary_post->comment_count . '</strong> ' . $y2013summary_trans[12][$y2013summary_lang] . '</li>';
+    foreach ($retro_commentsday as $retro_commentday) {
+
+        $retro_commentdaydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                $retro_commentday->commentday
+            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
+                $retro_commentday->howmany / $retro_nocomm->howmany * 70
+            ) . 'px"></div> &nbsp; ' . $retro_commentday->howmany . ' (' . round(
+                $retro_commentday->howmany / $retro_nocomm->howmany * 100,
+                2
+            ) . '%)</td></tr>';
+
+    }
+
+    foreach ($retro_topcom as $retro_post) {
+        $retro_postdata .= '<li><a href="' . get_permalink(
+                $retro_post->ID
+            ) . '">' . $retro_post->post_title . '</a>: <strong>' . $retro_post->comment_count . '</strong> ' . $retro_trans[12][$retro_lang] . '</li>';
     }
 
 
-    foreach ($y2013summary_postsbyauthors as $y2013summary_author) {
-        $y2013summary_authorprofile = get_userdata($y2013summary_author->post_author);
-        $y2013summary_authordata .= '<li>' . $y2013summary_authorprofile->display_name . ': <strong>' . $y2013summary_author->howmany . '</strong> ' . $y2013summary_trans[13][$y2013summary_lang] . '</li>';
+    foreach ($retro_postsbyauthors as $retro_author) {
+        $retro_authorprofile = get_userdata($retro_author->post_author);
+        $retro_authordata .= '<li>' . $retro_authorprofile->display_name . ': <strong>' . $retro_author->howmany . '</strong> ' . $retro_trans[13][$retro_lang] . '</li>';
     }
 
-    foreach ($y2013summary_commbyauthors as $y2013summary_commauthor) {
-        $y2013summary_authorprofile2 = get_userdata($y2013summary_commauthor->user_id);
-        $y2013summary_commauthordata .= '<li>' . $y2013summary_authorprofile2->display_name . ': <strong>' . $y2013summary_commauthor->howmany . '</strong> ' . $y2013summary_trans[12][$y2013summary_lang] . '</li>';
+    foreach ($retro_commbyauthors as $retro_commauthor) {
+        $retro_authorprofile2 = get_userdata($retro_commauthor->user_id);
+        $retro_commauthordata .= '<li>' . $retro_authorprofile2->display_name . ': <strong>' . $retro_commauthor->howmany . '</strong> ' . $retro_trans[12][$retro_lang] . '</li>';
     }
 
 
-    $y2013summary_text .= '
-	<style type="text/css">.y2013summaryChartBar{height:15px;background:#1A87D5;display:inline-block;}</style>
+    $retro_text .= '
+	<style type="text/css">.retroChartBar{height:15px;background:#1A87D5;display:inline-block;}</style>
 	<p>' . sprintf(
-            $y2013summary_trans[14][$y2013summary_lang],
-            $y2013summary_noposts->howmany,
-            $y2013summary_nopages->howmany,
-            $y2013summary_noattach->howmany
+            $retro_trans[14][$retro_lang],
+            $retro_noposts->howmany,
+            $retro_nopages->howmany,
+            $retro_noattach->howmany
         ) . '</p>
 	<p>&nbsp;</p>
-	<div class="y2013summaryCol1">
-	<p><strong>' . $y2013summary_trans[15][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_monthdata . '</table>
+	<div class="retroCol1">
+	<p><strong>' . $retro_trans[15][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_monthdata . '</table>
 
 	<p>&nbsp;</p>
 
-	<p><strong>' . $y2013summary_trans[16][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_daydata . '</table>
+	<p><strong>' . $retro_trans[16][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_daydata . '</table>
 
 	</div>
-	<div class="y2013summaryCol2">
-	<p><strong>' . $y2013summary_trans[17][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_hourdata . '</table>
+	<div class="retroCol2">
+	<p><strong>' . $retro_trans[17][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_hourdata . '</table>
 	</div>
-	<div class="y2013summaryClear"></div>
+	<div class="retroClear"></div>
 	<p>&nbsp;</p>
 	<p>' . sprintf(
-            $y2013summary_trans[18][$y2013summary_lang],
-            $y2013summary_nocomm->howmany,
-            $y2013summary_nocommr->howmany,
-            round($y2013summary_nocommr->howmany / $y2013summary_nocomm->howmany * 100, 2)
+            $retro_trans[18][$retro_lang],
+            $retro_nocomm->howmany,
+            $retro_nocommr->howmany,
+            round($retro_nocommr->howmany / $retro_nocomm->howmany * 100, 2)
         ) . '</p>
 	<p>&nbsp;</p>
-	<p><strong>' . $y2013summary_trans[19][$y2013summary_lang] . ':</strong></p>
-	<ul class="y2013summaryList">' . $y2013summary_commentdata . '</ul>
+	<p><strong>' . $retro_trans[19][$retro_lang] . ':</strong></p>
+	<ul class="retroList">' . $retro_commentdata . '</ul>
 	<p>&nbsp;</p>
-	<p><strong>' . $y2013summary_trans[20][$y2013summary_lang] . ':</strong></p>
-	<ul class="y2013summaryList">' . $y2013summary_postdata . '</ul>
+	<p><strong>' . $retro_trans[20][$retro_lang] . ':</strong></p>
+	<ul class="retroList">' . $retro_postdata . '</ul>
 	<p>&nbsp;</p>
-	<div class="y2013summaryCol1">
-	<p><strong>' . $y2013summary_trans[21][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_commentmonthdata . '</table>
+	<div class="retroCol1">
+	<p><strong>' . $retro_trans[21][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_commentmonthdata . '</table>
 	<p>&nbsp;</p>
-	<p><strong>' . $y2013summary_trans[22][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_commentdaydata . '</table>
+	<p><strong>' . $retro_trans[22][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_commentdaydata . '</table>
 	</div>
-	<div class="y2013summaryCol2">
-	<p><strong>' . $y2013summary_trans[23][$y2013summary_lang] . ':</strong></p>
-	<table class="y2013summaryTable">' . $y2013summary_commenthourdata . '</table>
+	<div class="retroCol2">
+	<p><strong>' . $retro_trans[23][$retro_lang] . ':</strong></p>
+	<table class="retroTable">' . $retro_commenthourdata . '</table>
 	</div>
-	<div class="y2013summaryClear"></div>
+	<div class="retroClear"></div>
 	';
 
-    if ($y2013summary_noauthors->howmany > 1) {
-        $y2013summary_text .= '<p>' . $y2013summary_trans[24][$y2013summary_lang] . '</p>
-		<ul class="y2013summaryList">' . $y2013summary_authordata . '</ul>
+    if ($retro_noauthors->howmany > 1) {
+        $retro_text .= '<p>' . $retro_trans[24][$retro_lang] . '</p>
+		<ul class="retroList">' . $retro_authordata . '</ul>
 		<p>&nbsp;</p>
-		<p>' . $y2013summary_trans[25][$y2013summary_lang] . '</p>
-		<ul class="y2013summaryList">' . $y2013summary_commauthordata . '</ul>
+		<p>' . $retro_trans[25][$retro_lang] . '</p>
+		<ul class="retroList">' . $retro_commauthordata . '</ul>
 		<p>&nbsp;</p>
 		';
 
     }
 
 
-    $y2013summary_draft = base64_encode(
+    $retro_draft = base64_encode(
         str_replace(
-            $y2013summary_trans[29][$y2013summary_lang],
-            $y2013summary_trans[30][$y2013summary_lang],
-            $y2013summary_text
-        ) . '<p>' . $y2013summary_trans[26][$y2013summary_lang] . '</p>'
+            $retro_trans[29][$retro_lang],
+            $retro_trans[30][$retro_lang],
+            $retro_text
+        ) . '<p>' . $retro_trans[26][$retro_lang] . '</p>'
     );
 
-    echo '<p>&nbsp;</p><form name="y2013summary_draft" method="post" action=""><input type="submit" name="generateDraft" class="button-primary" value="' . $y2013summary_trans[27][$y2013summary_lang] . '" />
-  <input type="hidden" name="y2013summary_draft" value="TRUE" />
-  <input type="hidden" name="y2013summary_draftcontent" value="' . $y2013summary_draft . '" />
+    echo '<p>&nbsp;</p><form name="retro_draft" method="post" action=""><input type="submit" name="generateDraft" class="button-primary" value="' . $retro_trans[27][$retro_lang] . '" />
+  <input type="hidden" name="retro_draft" value="TRUE" />
+  <input type="hidden" name="retro_draftcontent" value="' . $retro_draft . '" />
   </form>&nbsp;
-	<div id="poststuff"><div class="postbox"><h3 class="hndle"><span>' . $y2013summary_trans[28][$y2013summary_lang] . '</span></h3><div class="inside"><p>&nbsp;</p>';
-    echo $y2013summary_text;
+	<div id="poststuff"><div class="postbox"><h3 class="hndle"><span>' . $retro_trans[28][$retro_lang] . '</span></h3><div class="inside"><p>&nbsp;</p>';
+    echo $retro_text;
 
     echo '</div></div></div>';
 
-    echo '<form name="y2013summary_draft" method="post" action="">
-  <input type="submit" name="generateDraft" class="button-primary" value="' . $y2013summary_trans[27][$y2013summary_lang] . '" />
-  <input type="hidden" name="y2013summary_draft" value="TRUE" />
-  <input type="hidden" name="y2013summary_draftcontent" value="' . $y2013summary_draft . '" />
+    echo '<form name="retro_draft" method="post" action="">
+  <input type="submit" name="generateDraft" class="button-primary" value="' . $retro_trans[27][$retro_lang] . '" />
+  <input type="hidden" name="retro_draft" value="TRUE" />
+  <input type="hidden" name="retro_draftcontent" value="' . $retro_draft . '" />
   </form>
   <p>&nbsp;</p>';
 
