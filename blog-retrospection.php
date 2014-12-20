@@ -60,7 +60,7 @@ function retro() {
 
 
     echo '<div class="wrap">
-        <style type="text/css">
+        <!--<style type="text/css">
         .retroList{font-size:11px;margin-left:3em;list-style:disc;}
         #retroDonate{width:292px;height:420px;position:absolute;top:5px;right:5px;float:right;text-align:center;}
         .retroTable{margin: 0 0 0 10px;}
@@ -68,48 +68,46 @@ function retro() {
         .retroCol1{float:left;width:300px;overflow:hidden;}
         .retroCol2{float:left;width:260px;overflow:hidden;}
         .retroClear{clear:both;}
-        </style>
+        </style>-->
 
-            <h2>' . _e( 'Retrospection - blogging summarized', 'blog-retrospection' ) . '</h2>
+            <h2>' . __( 'Retrospection - blogging summarized', 'blog-retrospection' ) . '</h2>
+
             <!--<div id="retroDonate">
                 <iframe src="http://tools.flattr.net/widgets/thing.html?thing=1093328" width="292" height="420"></iframe>TODO /*Anpassen*/
             </div>-->
-            <p>' . _e( 'This plugin <strong>generates a retrospection of your blog</strong> for a given timeframe.',
+            <p>' . __( 'This plugin <strong>generates a retrospection of your blog</strong> for a given timeframe.',
             'blog-retrospection' ) . '</p>
-            <p>' . _e( 'See how many posts you wrote during the a choosen timeframe,  which were the most popular, who was the most active commenter etc.',
+            <p>' . __( 'See how many posts you wrote during the a choosen timeframe,  which were the most popular, who was the most active commenter etc.',
             'blog-retrospection' ) . '</p>
-            <p>' . _e( 'And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
+            <p>' . __( 'And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
             'blog-retrospection' ) . '</p>
-            <form>
-            <p>
-
-                <select name="timeframe">' . retro_getTimeFrames() . '</select>
-                </p>
-                </form>
 
     ';
 
     if ( $_POST['retro_generate'] == true ) {
-        retro_generate();//TODO üebergabe
+        retro_generate( $_POST['retro_timeframe'] );//TODO übergabe
 
     } elseif ( $_POST['retro_draft'] == true ) {
 
         $my_post = array(
-            'post_title' => __( 'Retrospection of the $timeframe', 'blog retrospection' ),
+            'post_title'   => sprintf(__( 'Retrospection of %s', 'blog retrospection' ), $_POST['retro_timeframe']),
             'post_content' => base64_decode( $_POST['retro_draftcontent'] ),
-            'post_status' => 'draft',
-            'post_author' => get_current_user_id(),
+            'post_status'  => 'draft',
+            'post_author'  => get_current_user_id(),
         );
 
 // Insert the post into the database
         $postid = wp_insert_post( $my_post );
 
-        echo '<p>&nbsp;</p><div class="updated"><p>' . _e( '<strong>A draft of the new post has been created</strong>. You can now',
+        echo '<p>&nbsp;</p><div class="updated"><p>' . __( '<strong>A draft of the new post has been created</strong>. You can now',
                 'blog-retrospection' ) . ' <a href="' . get_bloginfo(
                  'wpurl'
-             ) . '/wp-admin/post.php?post=' . $postid . '&action=edit">' . _e( 'edit it',
-                'blog-retrospection' ) . '</a> ' . _e( 'and then publish.', 'blog-retrospection' ) . '</p></div>';
-        echo '<p>&nbsp;</p><p>&nbsp;</p><form name="retro_generate" method="post" action="">
+             ) . '/wp-admin/post.php?post=' . $postid . '&action=edit">' . __( 'edit it',
+                'blog-retrospection' ) . '</a> ' . __( 'and then publish.', 'blog-retrospection' ) . '</p></div>';
+        echo '<p>&nbsp;</p><p>&nbsp;</p>
+              <form name="retro_generate" method="post" action="">
+                <select name="retro_timeframe">' . retro_getTimeFrames() . '</select>
+
     <input type="submit" name="generateStats" class="button-primary" value="' . __( 'Regenerate retrospection',
                 'blog-retrospection' ) . '" />
     <input type="hidden" name="retro_generate" value="TRUE" />
@@ -117,30 +115,33 @@ function retro() {
 
     } else {
         echo '<form name="retro_generate" method="post" action="">
-    <input type="submit" name="generateStats" class="button-primary" value="'. __( 'Generate retrospection', 'blog-retrospection' ) . '" />
+     <select name="retro_timeframe">' . retro_getTimeFrames() . '</select>
+    <input type="submit" name="generateStats" class="button-primary" value="' . __( 'Generate retrospection',
+                'blog-retrospection' ) . '" />
     <input type="hidden" name="retro_generate" value="TRUE" />
     </form>';
 
     }
 
-    echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . _e( 'Do you have any questions or suggestions? Mail me: dev@lioman.de or get in contact on twitter: <a href="http://twitter.com/lioman" rel="nofollow">@lioman</a>. You can also check out my blog at <a href="http://www.lioman.de">www.lioman.de</a>',
+    echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . __( 'Do you have any questions or suggestions? Mail me: dev@lioman.de or get in contact on twitter: <a href="http://twitter.com/lioman" rel="nofollow">@lioman</a>. You can also check out my blog at <a href="http://www.lioman.de">www.lioman.de</a>',
             'blog-retrospection' ) . '</small></p>';
     echo '</div>';
 }
 
-function retro_getTimeFrames(){
+function retro_getTimeFrames() {
     global $wpdb;
-    $times = $wpdb->get_results(
+    $times      = $wpdb->get_results(
         "SELECT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish'; "
     );
-    $timeFrames="";
-    foreach ($times as $option){
-        $timeFrames=$timeFrames .'<option value="'. $option->years . '">'. $option->years .'</option>';
+    $timeFrames = "";
+    foreach ( $times as $option ) {
+        $timeFrames = $timeFrames . '<option value="' . $option->years . '">' . $option->years . '</option>';
     }
+
     return $timeFrames;
 }
 
-function retro_generate($timeframe) {
+function retro_generate( $timeframe ) {
     global $wpdb, $retro_trans, $retro_lang, $retro_translations;
 
 
@@ -211,19 +212,22 @@ function retro_generate($timeframe) {
 
     foreach ( $retro_commenters as $retro_commenter ) {
 
-        $retro_commentdata .= '<li>' . $retro_commenter->comment_author . ': <strong>' . $retro_commenter->howmany . '</strong> ' . _e( 'comments',
+        $retro_commentdata .= '<li>' . $retro_commenter->comment_author . ': <strong>' . $retro_commenter->howmany . '</strong> ' . __( 'comments',
                 'blog-retrospection' ) . '</li>';
     }
 
     foreach ( $retro_months as $retro_month ) {
-        $retro_monthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                date( "F", mktime( 0, 0, 0, $retro_month->postmonth, 1, $timeframe ) )
-            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
-                                $retro_month->howmany / $retro_noposts->howmany * 70
-                            ) . 'px"></div> &nbsp; ' . $retro_month->howmany . ' (' . round(
-                                $retro_month->howmany / $retro_noposts->howmany * 100,
-                                2
-                            ) . '%)</td></tr>';
+        if ( $retro_noposts->howmany != 0 ) {
+            $retro_monthdata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                    date( "F", mktime( 0, 0, 0, $retro_month->postmonth, 1, $timeframe ) )
+                ) . ':</td><td><div class="retroChartBar" style="width:' .
+                                round(
+                                    $retro_month->howmany / $retro_noposts->howmany * 70
+                                ) . 'px"></div> &nbsp; ' . $retro_month->howmany . ' (' . round(
+                                    $retro_month->howmany / $retro_noposts->howmany * 100,
+                                    2
+                                ) . '%)</td></tr>';
+        }
     }
 
     foreach ( $retro_commentmonths as $retro_commentmonth ) {
@@ -238,12 +242,14 @@ function retro_generate($timeframe) {
     }
 
     foreach ( $retro_hours as $retro_hour ) {
-        $retro_hourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $retro_hour->posthour . ':</td><td><div class="retroChartBar" style="width:' . round(
-                $retro_hour->howmany / $retro_noposts->howmany * 70
-            ) . 'px"></div> &nbsp; ' . $retro_hour->howmany . ' (' . round(
-                               $retro_hour->howmany / $retro_noposts->howmany * 100,
-                               2
-                           ) . '%)</td></tr>';
+        if ( $retro_noposts->howmany != 0 ) {
+            $retro_hourdata .= '<tr><td style="width:50px;text-align:right;font-weight:bold;">' . $retro_hour->posthour . ':</td><td><div class="retroChartBar" style="width:' . round(
+                    $retro_hour->howmany / $retro_noposts->howmany * 70
+                ) . 'px"></div> &nbsp; ' . $retro_hour->howmany . ' (' . round(
+                                   $retro_hour->howmany / $retro_noposts->howmany * 100,
+                                   2
+                               ) . '%)</td></tr>';
+        }
     }
 
     foreach ( $retro_commenthours as $retro_commenthour ) {
@@ -256,16 +262,16 @@ function retro_generate($timeframe) {
     }
 
     foreach ( $retro_days as $retro_day ) {
-
-        $retro_daydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
-                $retro_day->postday
-            ) . ':</td><td><div class="retroChartBar" style="width:' . round(
-                              $retro_day->howmany / $retro_noposts->howmany * 70
-                          ) . 'px"></div> &nbsp; ' . $retro_day->howmany . ' (' . round(
-                              $retro_day->howmany / $retro_noposts->howmany * 100,
-                              2
-                          ) . '%)</td></tr>';
-
+        if ( $retro_noposts->howmany != 0 ) {
+            $retro_daydata .= '<tr><td style="width:110px;text-align:right;font-weight:bold;">' . __(
+                    $retro_day->postday
+                ) . ':</td><td><div class="retroChartBar" style="width:' . round(
+                                  $retro_day->howmany / $retro_noposts->howmany * 70
+                              ) . 'px"></div> &nbsp; ' . $retro_day->howmany . ' (' . round(
+                                  $retro_day->howmany / $retro_noposts->howmany * 100,
+                                  2
+                              ) . '%)</td></tr>';
+        }
     }
 
     foreach ( $retro_commentsday as $retro_commentday ) {
@@ -284,21 +290,21 @@ function retro_generate($timeframe) {
     foreach ( $retro_topcom as $retro_post ) {
         $retro_postdata .= '<li><a href="' . get_permalink(
                 $retro_post->ID
-            ) . '">' . $retro_post->post_title . '</a>: <strong>' . $retro_post->comment_count . '</strong> ' . _e( 'comments',
+            ) . '">' . $retro_post->post_title . '</a>: <strong>' . $retro_post->comment_count . '</strong> ' . __( 'comments',
                 'blog-retrospection' ) . '</li>';
     }
 
 
     foreach ( $retro_postsbyauthors as $retro_author ) {
         $retro_authorprofile = get_userdata( $retro_author->post_author );
-        $retro_authordata .= '<li>' . $retro_authorprofile->display_name . ': <strong>' . $retro_author->howmany . '</strong> ' . _e( 'posts',
+        $retro_authordata .= '<li>' . $retro_authorprofile->display_name . ': <strong>' . $retro_author->howmany . '</strong> ' . __( 'posts',
                 'blog-retrospection' ) . '</li>';
     }
 
     $retro_commauthordata = "";
     foreach ( $retro_commbyauthors as $retro_commauthor ) {
         $retro_authorprofile2 = get_userdata( $retro_commauthor->user_id );
-        $retro_commauthordata .= '<li>' . $retro_authorprofile2->display_name . ': <strong>' . $retro_commauthor->howmany . '</strong> ' . _e( 'comments',
+        $retro_commauthordata .= '<li>' . $retro_authorprofile2->display_name . ': <strong>' . $retro_commauthor->howmany . '</strong> ' . __( 'comments',
                 'blog-retrospection' ) . '</li>';
     }
 
@@ -307,60 +313,71 @@ function retro_generate($timeframe) {
     $retro_text .= '
     <style type="text/css">.retroChartBar{height:15px;background:#1A87D5;display:inline-block;}</style>
     <p>' . sprintf(
-            __('In $timeframe you wrote <strong>%s</strong> posts and added <strong>%s pages</strong> to this blog, with <strong>%s attachments</strong> in total.' , 'blog-retrospection'),
+            __( 'In %s you wrote <strong>%s</strong> posts and added <strong>%s pages</strong> to this blog, with <strong>%s attachments</strong> in total.',
+                'blog-retrospection' ),
+            $timeframe,
             $retro_noposts->howmany,
             $retro_nopages->howmany,
             $retro_noattach->howmany
         ) . '</p>
     <p>&nbsp;</p>
     <div class="retroCol1">
-    <p><strong>' . _e( 'The number of posts in each month', 'blog-retrospection' ) . ':</strong></p>
+    <p><strong>' . __( 'The number of posts in each month', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_monthdata . '</table>
 
     <p>&nbsp;</p>
 
-    <p><strong>' . _e( 'The number of posts in each day of week', 'blog-retrospection' ) . ':</strong></p>
+    <p><strong>' . __( 'The number of posts in each day of week', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_daydata . '</table>
 
     </div>
     <div class="retroCol2">
-    <p><strong>' . _e('Hours you publish new posts', 'blog-retrospection' ) . ':</strong></p>
+    <p><strong>' . __( 'Hours you publish new posts', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_hourdata . '</table>
     </div>
     <div class="retroClear"></div>
     <p>&nbsp;</p>
     <p>' . sprintf(
-                       __('In $timeframe your posts were commented <strong>%s</strong> times, from which <strong>%s</strong> comments (%s percent) were written by registered users/authors.','blog-retrospection'),
+                       __( 'In %s your posts were commented <strong>%s</strong> times, from which <strong>%s</strong> comments (%s percent) were written by registered users/authors.',
+                           'blog-retrospection' ),
+                       $timeframe,
                        $retro_nocomm->howmany,
                        $retro_nocommr->howmany,
                        round( $retro_nocommr->howmany / $retro_nocomm->howmany * 100, 2 )
                    ) . '</p>
     <p>&nbsp;</p>
-    <p><strong>' . _e( 'TOP 10 commenters in $timeframe', 'blog-retrospection' ) . ':</strong></p>
+    <p><strong>' . sprintf(
+                       __( 'TOP 10 commenters in %s', 'blog-retrospection' ),
+                       $timeframe
+                   ) . ':</strong></p>
     <ul class="retroList">' . $retro_commentdata . '</ul>
     <p>&nbsp;</p>
-    <p><strong>' . _e( 'TOP 10 most commented posts in $timeframe', 'blog-retrospection' ) . ':</strong></p>
+    <p><strong>' . sprintf(
+                       __( 'TOP 10 most commented posts in %s', 'blog-retrospection' ),
+                       $timeframe
+                   ) . ':</strong></p>
     <ul class="retroList">' . $retro_postdata . '</ul>
     <p>&nbsp;</p>
     <div class="retroCol1">
-    <p><strong>' . _e('The number of comments in each month', 'blog-retrospection') . ':</strong></p>
+    <p><strong>' . __( 'The number of comments in each month', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_commentmonthdata . '</table>
     <p>&nbsp;</p>
-    <p><strong>' . _e('Days people comment on your posts','blog-retrospection') . ':</strong></p>
+    <p><strong>' . __( 'Days people comment on your posts', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_commentdaydata . '</table>
     </div>
     <div class="retroCol2">
-    <p><strong>' . _e('At what hours people comment','blog-retrospection') . ':</strong></p>
+    <p><strong>' . __( 'At what hours people comment', 'blog-retrospection' ) . ':</strong></p>
     <table class="retroTable">' . $retro_commenthourdata . '</table>
     </div>
     <div class="retroClear"></div>
     ';
 
     if ( $retro_noauthors->howmany > 1 ) {
-        $retro_text .= '<p>' ._e('<strong>This blog has more then one author.</strong> Here is the number of posts each one wrote:','blog-retrospection') . '</p>
+        $retro_text .= '<p>' . __( '<strong>This blog has more then one author.</strong> Here is the number of posts each one wrote:',
+                'blog-retrospection' ) . '</p>
         <ul class="retroList">' . $retro_authordata . '</ul>
         <p>&nbsp;</p>
-        <p>' . _e('And the number of comments each one wrote:','blog-retrospection') . '</p>
+        <p>' . __( 'And the number of comments each one wrote:', 'blog-retrospection' ) . '</p>
         <ul class="retroList">' . $retro_commauthordata . '</ul>
         <p>&nbsp;</p>
         ';
@@ -373,23 +390,21 @@ function retro_generate($timeframe) {
             $retro_trans[29][ $retro_lang ],
             $retro_trans[30][ $retro_lang ],
             $retro_text
-        ) . '<p>' . _e('Summary generated by <a href="https://wordpress.org/extend/plugins/TODO">blog retrospection plugin</a>') . '</p>'
+        ) . '<p>' . __( 'Summary generated by <a href="https://wordpress.org/extend/plugins/TODO">blog retrospection plugin</a>' ) . '</p>'
     );
 
-    echo '<p>&nbsp;</p><form name="retro_draft" method="post" action=""><input type="submit" name="generateDraft" class="button-primary" value="' . $retro_trans[27][ $retro_lang ] . '" />
+        echo '<p>&nbsp;</p><form name="retro_draft" method="post" action="">'
+             . get_submit_button(  __( 'Create a new blog post with this retrospection data',
+                'blog-retrospection' ), "primary", "generateDraft", false) .'
   <input type="hidden" name="retro_draft" value="TRUE" />
   <input type="hidden" name="retro_draftcontent" value="' . $retro_draft . '" />
+  <input type="hidden" name="retro_timeframe" value="' . $timeframe . '" />
   </form>&nbsp;
-    <div id="poststuff"><div class="postbox"><h3 class="hndle"><span>' . _e('Blog retrospection','blog-retrospection') . '</span></h3><div class="inside"><p>&nbsp;</p>';
+    <div id="poststuff"><div class="postbox"><h3 class="hndle"><span>' . sprintf( __( 'Blog retrospection for %s',
+                'blog-retrospection' ),
+            $timeframe ) . '</span></h3><div class="inside"><p>&nbsp;</p>';
     echo $retro_text;
 
     echo '</div></div></div>';
-
-    echo '<form name="retro_draft" method="post" action="">
-  <input type="submit" name="generateDraft" class="button-primary" value="' . _e('Create a new blog post with this retrospection data','blog-retrospection') . '" />
-  <input type="hidden" name="retro_draft" value="TRUE" />
-  <input type="hidden" name="retro_draftcontent" value="' . $retro_draft . '" />
-  </form>
-  <p>&nbsp;</p>';
 
 }
