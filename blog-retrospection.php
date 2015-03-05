@@ -21,6 +21,16 @@ Min WP Version: 4.0
 Max WP Version: 4.1
 */
 define(__NAMESPACE__ . '\BR', __NAMESPACE__ . '\\');
+add_action('init', BR . 'init');
+
+function init()
+{
+    add_action('admin_menu', BR . 'add_menus');
+    add_action('plugins_loaded', BR . 'load_textdomain');
+    wp_enqueue_script('jqplot', plugins_url('js/jqplot/jquery.jqplot.min.js', __FILE__), array('jquery'));
+    wp_enqueue_script('jqplot_barRenderer', plugins_url('js/jqplot/plugins/jqplot.barRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_style('jqplot', plugins_url('css/jquery.jqplot.min.css', __FILE__));
+}
 
 
 function load_textdomain()
@@ -28,18 +38,14 @@ function load_textdomain()
     \load_plugin_textdomain('blog-retrospection', FALSE, basename(dirname(__FILE__)) . '/i18n/');
 }
 
-add_action('admin_menu', BR . 'add_menu');
-add_action('plugins_loaded', BR . 'load_textdomain');
 
-
-function add_menu()
+function add_menus()
 {
-    \add_submenu_page('index.php', 'Retrospection', 'Retrospection', 'read', 'retro', 'retro');
+    \add_dashboard_page('Retrospection', 'Retrospection', 'read', 'blog_retrospection', BR . 'retro');
 }
 
 function retro()
 {
-    global $retro_trans, $retro_lang, $retro_translations;
     if (!current_user_can('read')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
@@ -66,11 +72,19 @@ function retro()
             <p>' . __('See how many posts you wrote during the a choosen time segment,  which were the most popular, who was the most active commenter etc.',
             'blog-retrospection') . '</p>
             <p>' . __('And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
-            'blog-retrospection') . '</p>
+            'blog-retrospection') . '</p>' . getTimeSegments() . '
+            <div id="chart1" style="height:400px;width:400px; "></div>
+            <script>
+            jQuery.jqplot(
+            "chart1",  [' . getTimeSegments() . '],{
+            seriesDefault:{
+            renderer: jQuery.jqplot.BarRenderer
+            }
+            });</script>
 
     ';
 
-    if ($_POST['retro_generate'] == true) {
+    /* ($_POST['retro_generate'] == true) {
         retro_generate($_POST['retro_timeSegment']);//TODO übergabe
 
     } elseif ($_POST['retro_draft'] == true) {
@@ -109,7 +123,7 @@ function retro()
     </form>';
 
     }
-
+*/
     echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . __('Do you have any questions or suggestions? Mail me: dev@lioman.de or get in contact on twitter: <a href="http://twitter.com/lioman" rel="nofollow">@lioman</a>. You can also check out my blog at <a href="http://www.lioman.de">www.lioman.de</a>',
             'blog-retrospection') . '</small></p>';
     echo '</div>';
@@ -120,15 +134,19 @@ function retro()
  *
  * @return string HTML <option> String with time segments
  */
-function retro_getTimeSegments()
+function getTimeSegments()
 {
     global $wpdb;
     $times = $wpdb->get_results(
-        "SELECT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish'; "
+        "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish'; "
     );
+
     $timeSegments = "";
+    $i = 1;
     foreach ($times as $option) {
-        $timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
+        //$timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
+        $timeSegments = $timeSegments . '[' . $i . ',' . $option->years . '], ';
+        $i++;
     }
 
     return $timeSegments;
