@@ -29,6 +29,8 @@ function init()
     add_action('plugins_loaded', BR . 'load_textdomain');
     wp_enqueue_script('jqplot', plugins_url('js/jqplot/jquery.jqplot.min.js', __FILE__), array('jquery'));
     wp_enqueue_script('jqplot_barRenderer', plugins_url('js/jqplot/plugins/jqplot.barRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('jqplot_axisRenderer', plugins_url('js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('br_main', plugins_url('js/main.js', __FILE__), array('jqplot'));
     wp_enqueue_style('jqplot', plugins_url('css/jquery.jqplot.min.css', __FILE__));
 }
 
@@ -41,7 +43,7 @@ function load_textdomain()
 
 function add_menus()
 {
-    \add_dashboard_page('Retrospection', 'Retrospection', 'read', 'blog_retrospection', BR . 'retro');
+    \add_dashboard_page('Retrospection', 'Retrospection', 'publish_posts', 'blog_retrospection', BR . 'retro');
 }
 
 function retro()
@@ -50,7 +52,8 @@ function retro()
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
 
-
+    $arrTimeSegmentData = getTimeSegmentData(2015);
+    //var_dump($arrTimeSegmentData);
     echo '<div class="wrap">
         <!--<style type="text/css">
         .retroList{font-size:11px;margin-left:3em;list-style:disc;}
@@ -72,15 +75,13 @@ function retro()
             <p>' . __('See how many posts you wrote during the a choosen time segment,  which were the most popular, who was the most active commenter etc.',
             'blog-retrospection') . '</p>
             <p>' . __('And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
-            'blog-retrospection') . '</p>' . getTimeSegments() . '
+            'blog-retrospection') . '</p>
+            <form name="retro_generate" method="post" action="">
+            <select name="retro_timeSegment">' . getTimeSegmentsForDropDown() . '</select>
+
+
             <div id="chart1" style="height:400px;width:400px; "></div>
-            <script>
-            jQuery.jqplot(
-            "chart1",  [' . getTimeSegments() . '],{
-            seriesDefault:{
-            renderer: jQuery.jqplot.BarRenderer
-            }
-            });</script>
+            <script>barChart([\'2014\', \'2015\'], [33, ' . $arrTimeSegmentData['retro_noposts']->howmany . '])</script>
 
     ';
 
@@ -134,7 +135,7 @@ function retro()
  *
  * @return string HTML <option> String with time segments
  */
-function getTimeSegments()
+function getTimeSegmentsForDropDown()
 {
     global $wpdb;
     $times = $wpdb->get_results(
@@ -142,11 +143,9 @@ function getTimeSegments()
     );
 
     $timeSegments = "";
-    $i = 1;
+
     foreach ($times as $option) {
-        //$timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
-        $timeSegments = $timeSegments . '[' . $i . ',' . $option->years . '], ';
-        $i++;
+        $timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
     }
 
     return $timeSegments;
@@ -158,7 +157,7 @@ function getTimeSegments()
  *
  * @return array With all needed data for given time segment
  */
-function retro_getTimeSegmentData($timeSegment)
+function getTimeSegmentData($timeSegment)
 {
     global $wpdb;
     $timeSegmentData = array(
