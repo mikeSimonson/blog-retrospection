@@ -139,7 +139,7 @@ function getTimeSegmentsForDropDown()
 {
     global $wpdb;
     $times = $wpdb->get_results(
-        "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish'; "
+        "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish' ORDER BY years DESC; "
     );
 
     $timeSegments = "";
