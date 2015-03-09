@@ -23,17 +23,44 @@ Max WP Version: 4.1
 define(__NAMESPACE__ . '\BR', __NAMESPACE__ . '\\');
 add_action('init', BR . 'init');
 
+/**
+ * Initialize the plugin. adds menus, load text domain and JavaScript, etc.
+ * @return void
+ */
 function init()
 {
     add_action('admin_menu', BR . 'add_menus');
     add_action('plugins_loaded', BR . 'load_textdomain');
+    wp_localize_script('br_main', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+    embedJqPlot();
+    add_action('wp_ajax_api_getTimeSegmentData', BR . 'api_getTimeSegmentData');
+}
+
+
+/**
+ * embeds jqplot and all needed plugins
+ * @return void
+ */
+function embedJqPlot()
+{
     wp_enqueue_script('jqplot', plugins_url('js/jqplot/jquery.jqplot.min.js', __FILE__), array('jquery'));
     wp_enqueue_script('jqplot_barRenderer', plugins_url('js/jqplot/plugins/jqplot.barRenderer.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_axisRenderer', plugins_url('js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js', __FILE__), array('jqplot'));
-    wp_enqueue_script('br_main', plugins_url('js/main.js', __FILE__), array('jqplot'));
-    wp_enqueue_style('jqplot', plugins_url('css/jquery.jqplot.min.css', __FILE__));
+    wp_enqueue_script('jqplot_pointLabels', plugins_url('js/jqplot/plugins/jqplot.pointLabels.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('br_main', plugins_url('js/blog_retrospection.js', __FILE__), array('jquery', 'jqplot'));
+    wp_enqueue_style('jqplot_style', plugins_url('css/jquery.jqplot.min.css', __FILE__));
 }
 
+
+function api_getTimeSegmentData()
+{
+
+    $intTimeSegment = intval($_POST['timeSegment']);
+
+    echo getTimeSegmentData($intTimeSegment);
+
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
 
 function load_textdomain()
 {
@@ -41,29 +68,46 @@ function load_textdomain()
 }
 
 
+/**
+ * Add menu to navigation
+ * @return void
+ */
 function add_menus()
 {
     \add_dashboard_page('Retrospection', 'Retrospection', 'publish_posts', 'blog_retrospection', BR . 'retro');
 }
+
+
+/**
+ * Get possible time segments from database and add option tags to them
+ *
+ * @return string HTML <option> String with time segments
+ */
+function getTimeSegmentsForDropDown()
+{
+    global $wpdb;
+    $times = $wpdb->get_results(
+        "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish' ORDER BY years DESC; "
+    );
+
+    $timeSegments = "";
+
+    foreach ($times as $option) {
+        $timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
+    }
+
+    return $timeSegments;
+}
+
 
 function retro()
 {
     if (!current_user_can('read')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
+    //\add_meta_box('howto-metaboxes-contentbox-1', 'Contentbox 1 Title', "content");
 
-    $arrTimeSegmentData = getTimeSegmentData(2015);
-    //var_dump($arrTimeSegmentData);
     echo '<div class="wrap">
-        <!--<style type="text/css">
-        .retroList{font-size:11px;margin-left:3em;list-style:disc;}
-        #retroDonate{width:292px;height:420px;position:absolute;top:5px;right:5px;float:right;text-align:center;}
-        .retroTable{margin: 0 0 0 10px;}
-        .retroTable td{font-size:11px;line-height:2em;padding:0.25em;overflow:hidden;}
-        .retroCol1{float:left;width:300px;overflow:hidden;}
-        .retroCol2{float:left;width:260px;overflow:hidden;}
-        .retroClear{clear:both;}
-        </style>-->
 
             <h2>' . __('Retrospection - blogging summarized', 'blog-retrospection') . '</h2>
 
@@ -76,12 +120,13 @@ function retro()
             'blog-retrospection') . '</p>
             <p>' . __('And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
             'blog-retrospection') . '</p>
-            <form name="retro_generate" method="post" action="">
-            <select name="retro_timeSegment">' . getTimeSegmentsForDropDown() . '</select>
+            <form >
+            <label for="timeSegmentDropDown">' . __('Time Segment:', 'blog-retrospection') . '</label>
+            <select id="timeSegmentDropDown" onchange="timeSegmentSelected();">' . getTimeSegmentsForDropDown() . '</select>
+            </form>
 
+            <div id="chartPostCount" style="height:400px;width:400px; "></div>
 
-            <div id="chart1" style="height:400px;width:400px; "></div>
-            <script>barChart([\'2014\', \'2015\'], [33, ' . $arrTimeSegmentData['retro_noposts']->howmany . '])</script>
 
     ';
 
@@ -127,32 +172,13 @@ function retro()
 */
     echo '<p>&nbsp;</p><p>&nbsp;</p><hr><p><small>' . __('Do you have any questions or suggestions? Mail me: dev@lioman.de or get in contact on twitter: <a href="http://twitter.com/lioman" rel="nofollow">@lioman</a>. You can also check out my blog at <a href="http://www.lioman.de">www.lioman.de</a>',
             'blog-retrospection') . '</small></p>';
-    echo '</div>';
+    echo '</div>
+<script>timeSegmentSelected()</script>';
 }
 
 /**
- * Get possible time segments from database and add option tags to them
+ * Gets all needed statistical data for a given time segment and return it as array
  *
- * @return string HTML <option> String with time segments
- */
-function getTimeSegmentsForDropDown()
-{
-    global $wpdb;
-    $times = $wpdb->get_results(
-        "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish' ORDER BY years DESC; "
-    );
-
-    $timeSegments = "";
-
-    foreach ($times as $option) {
-        $timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
-    }
-
-    return $timeSegments;
-}
-
-
-/**
  * @param $timeSegment
  *
  * @return array With all needed data for given time segment
@@ -160,28 +186,52 @@ function getTimeSegmentsForDropDown()
 function getTimeSegmentData($timeSegment)
 {
     global $wpdb;
+
     $timeSegmentData = array(
-        "retro_noposts" => $wpdb->get_row(
-            "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=$timeSegment and post_type='post' and post_status='publish'"
+        'post_count' => array(
+            "timeSegment" => $wpdb->get_var(
+                "SELECT count($wpdb->posts.ID) FROM $wpdb->posts WHERE year(post_date)=$timeSegment and post_type='post' and post_status='publish'"
+            ),
+            "comparisonPeriod" => $wpdb->get_var("SELECT count($wpdb->posts.ID) FROM $wpdb->posts WHERE year(post_date)=$timeSegment-1 and post_type='post' and post_status='publish'"
+            )
         ),
-        "retro_nopages" => $wpdb->get_row(
-            "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=$timeSegment and post_type='page' and post_status='publish'"
+        "page_count" => array(
+            "timeSegment" => $wpdb->get_var(
+                "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=$timeSegment and post_type='page' and post_status='publish'"
+            ),
+            "comparisonPeriod" => $wpdb->get_var(
+                "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=$timeSegment-1 and post_type='page' and post_status='publish'"
+            )
         ),
-        "retro_noattach" => $wpdb->get_row(
+        "average_posts" => $wpdb->get_var(
+            "SELECT COUNT($wpdb->posts.ID) / COUNT(DISTINCT YEAR($wpdb->posts.post_date)) FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish'"
+        ),
+        "postsPerMonth" => array(
+            "timeSegment" => $wpdb->get_results(
+                "SELECT month($wpdb->posts.post_date) as postmonth,count($wpdb->posts.ID) as count FROM $wpdb->posts WHERE year(post_date)=$timeSegment and $wpdb->posts.post_type='post' group by postmonth order by postmonth asc"
+            ),
+            "comparisonPeriod" => $wpdb->get_results(
+                "SELECT month($wpdb->posts.post_date) as postmonth,count($wpdb->posts.ID) as count FROM $wpdb->posts WHERE year(post_date)=$timeSegment-1 and $wpdb->posts.post_type='post' group by postmonth order by postmonth asc"
+            )
+        ),
+        "author_count" => $wpdb->get_var("SELECT count($wpdb->users.ID) as howmany FROM $wpdb->users"),
+        "comment_count" =>
+            array(
+                "timeSegment" => $wpdb->get_var(
+                    "SELECT count($wpdb->comments.comment_ID) FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1"
+                ),
+                "comparisonPeriod" => $wpdb->get_var(
+                    "SELECT count($wpdb->comments.comment_ID) FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment-1 and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1"
+                )
+            )//,
+        /*"retro_noattach" => $wpdb->get_var(
             "SELECT count($wpdb->posts.ID) as howmany FROM $wpdb->posts WHERE year(post_date)=$timeSegment and $wpdb->posts.post_type='attachment'"
-        ),
-        "retro_noauthors" => $wpdb->get_row("SELECT count($wpdb->users.ID) as howmany FROM $wpdb->users"),
-        "retro_nocomm" => $wpdb->get_row(
-            "SELECT count($wpdb->comments.comment_ID) as howmany FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1"
         ),
         "retro_commbyauthors" => $wpdb->get_results(
             "SELECT count($wpdb->comments.comment_ID) as howmany, $wpdb->comments.user_id FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment and $wpdb->comments.comment_type!='trackback' and $wpdb->comments.comment_approved=1 and $wpdb->comments.user_id>0 group by $wpdb->comments.user_id"
-        ),
-        "retro_nocommr" => $wpdb->get_row(
+        ),*/
+        /*"retro_nocommr" => $wpdb->get_row(
             "SELECT count($wpdb->comments.comment_ID) as howmany FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment and comment_type!='trackback' and $wpdb->comments.user_id>0 and $wpdb->comments.comment_approved=1"
-        ),
-        "retro_months" => $wpdb->get_results(
-            "SELECT count($wpdb->posts.ID) as howmany, month($wpdb->posts.post_date) as postmonth FROM $wpdb->posts WHERE year(post_date)=$timeSegment and $wpdb->posts.post_type='post' group by postmonth order by postmonth asc"
         ),
         "retro_hours" => $wpdb->get_results(
             "SELECT count($wpdb->posts.ID) as howmany, hour($wpdb->posts.post_date) as posthour FROM $wpdb->posts WHERE year(post_date)=$timeSegment and $wpdb->posts.post_type='post' group by posthour order by posthour asc"
@@ -206,10 +256,10 @@ function getTimeSegmentData($timeSegment)
         ),
         "retro_commenthours" => $wpdb->get_results(
             "SELECT count($wpdb->comments.comment_ID) as howmany, hour($wpdb->comments.comment_date) as commenthour FROM $wpdb->comments WHERE year($wpdb->comments.comment_date)=$timeSegment and comment_type!='trackback' and $wpdb->comments.comment_approved=1 group by commenthour order by commenthour asc"
-        )
+        )*/
     );
 
-    return $timeSegmentData;
+    return json_encode($timeSegmentData);
 }
 
 /**
