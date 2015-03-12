@@ -29,10 +29,10 @@ add_action('init', BR . 'init');
  */
 function init()
 {
-    add_action('admin_menu', BR . 'add_menus');
-    add_action('plugins_loaded', BR . 'load_textdomain');
+    add_action('admin_menu', BR . 'addMenus');
+    add_action('plugins_loaded', BR . 'loadTextDomain');
     wp_localize_script('br_main', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
-    embedJqPlot();
+    embedScriptsAndStyle();
     add_action('wp_ajax_api_getTimeSegmentData', BR . 'api_getTimeSegmentData');
 }
 
@@ -41,7 +41,7 @@ function init()
  * embeds jqplot and all needed plugins
  * @return void
  */
-function embedJqPlot()
+function embedScriptsAndStyle()
 {
     wp_enqueue_script('jqplot', plugins_url('js/jqplot/jquery.jqplot.min.js', __FILE__), array('jquery'));
     wp_enqueue_script('jqplot_barRenderer', plugins_url('js/jqplot/plugins/jqplot.barRenderer.min.js', __FILE__), array('jqplot'));
@@ -49,6 +49,7 @@ function embedJqPlot()
     wp_enqueue_script('jqplot_pointLabels', plugins_url('js/jqplot/plugins/jqplot.pointLabels.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('br_main', plugins_url('js/blog_retrospection.js', __FILE__), array('jquery', 'jqplot'));
     wp_enqueue_style('jqplot_style', plugins_url('css/jquery.jqplot.min.css', __FILE__));
+    wp_enqueue_style('br_style', plugins_url('css/blog_retrospection.css', __FILE__));
 }
 
 
@@ -62,7 +63,7 @@ function api_getTimeSegmentData()
     wp_die(); // this is required to terminate immediately and return a proper response
 }
 
-function load_textdomain()
+function loadTextDomain()
 {
     \load_plugin_textdomain('blog-retrospection', FALSE, basename(dirname(__FILE__)) . '/i18n/');
 }
@@ -72,9 +73,9 @@ function load_textdomain()
  * Add menu to navigation
  * @return void
  */
-function add_menus()
+function addMenus()
 {
-    \add_dashboard_page('Retrospection', 'Retrospection', 'publish_posts', 'blog_retrospection', BR . 'retro');
+    \add_dashboard_page('Retrospection', 'Retrospection', 'publish_posts', 'blog_retrospection', BR . 'main');
 }
 
 
@@ -100,7 +101,35 @@ function getTimeSegmentsForDropDown()
 }
 
 
-function retro()
+function createOptionsBox()
+{
+    echo '<div id="br_options_box">
+    <h3>' . __('Options', 'blog-retrospection') . ':</h3>
+    <form id="timeSegmentForm">
+        <label for="timeSegmentDropDown">' . __('Time Segment:', 'blog-retrospection') . '</label>
+        <select id="timeSegmentDropDown" onchange="timeSegmentSelected();">' . getTimeSegmentsForDropDown() . '</select>
+     </form>
+     <div id="br_check_boxes">
+     <form>
+     <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount"/><br /></p>
+     <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth"/><br /></p>
+     </form>
+     </div>
+     <div class="clear"></div>';
+
+    echo '</div>';
+}
+
+function createGraphDivs()
+{
+    echo '
+        <div id="chartPostCount" style="height:300px;width:400px; "></div>
+        <div id="chartPostsPerMonth" style="height:300px;width:400px; "></div>
+        ';
+}
+
+
+function main()
 {
     if (!current_user_can('read')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
@@ -116,19 +145,13 @@ function retro()
             </div>-->
             <p>' . __('This plugin <strong>generates a retrospection of your blog</strong> for a given time segment.',
             'blog-retrospection') . '</p>
-            <p>' . __('See how many posts you wrote during the a choosen time segment,  which were the most popular, who was the most active commenter etc.',
+            <p>' . __('See how many posts you wrote during the a chosen time segment,  which were the most popular, who was the most active commenter etc.',
             'blog-retrospection') . '</p>
             <p>' . __('And then <strong>share the stats with your readers</strong> - copy the data to a new draft with a single click.',
-            'blog-retrospection') . '</p>
-            <form >
-            <label for="timeSegmentDropDown">' . __('Time Segment:', 'blog-retrospection') . '</label>
-            <select id="timeSegmentDropDown" onchange="timeSegmentSelected();">' . getTimeSegmentsForDropDown() . '</select>
-            </form>
+            'blog-retrospection') . '</p>';
+    createOptionsBox();
+    createGraphDivs();
 
-            <div id="chartPostCount" style="height:400px;width:400px; "></div>
-
-
-    ';
 
     /* ($_POST['retro_generate'] == true) {
         retro_generate($_POST['retro_timeSegment']);//TODO übergabe

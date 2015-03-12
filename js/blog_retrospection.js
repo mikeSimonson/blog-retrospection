@@ -1,7 +1,5 @@
 function timeSegmentSelected() {
-
     var intTimeSegment = jQuery('#timeSegmentDropDown').val();
-
     var data = {
         action: 'api_getTimeSegmentData',
         timeSegment: intTimeSegment      // We pass php values differently!
@@ -10,24 +8,33 @@ function timeSegmentSelected() {
     // We can also pass the url value separately from ajaxurl for front end AJAX implementations
     jQuery.post(ajaxurl, data, function (response) {
         var objResponse = jQuery.parseJSON(response);
-        barChart([intTimeSegment - 1, intTimeSegment],
+        postCountChart([intTimeSegment - 1, intTimeSegment],
             [parseInt(objResponse.post_count.comparisonPeriod), parseInt(objResponse.post_count.timeSegment)],
             [parseInt(objResponse.page_count.comparisonPeriod), parseInt(objResponse.page_count.timeSegment)])
+        postsPerMonthChart([intTimeSegment], objResponse.postsPerMonth.timeSegment)
 
     });
+    jQuery('#checkboxPostCount').prop('checked', true);
 }
 
-function barChart(years, postCount, pageCount) {
+function postCountChart(timeSegments, postCount, pageCount) {
+    jQuery('#chartPostCount').empty();
+    barChart(timeSegments, postCount, pageCount, 'chartPostCount', 'Number of Blogposts', ['Posts', 'Pages'])
+}
+
+
+function postsPerMonthChart(timeSegments, postCount) {
+    jQuery('#chartPostsPerMonth').empty();
+    barChart(timeSegments, postCount, pageCount, 'chartPostsPerMonth', 'Number of Posts per Month', ['Posts', 'Pages'])
+}
+
+function barChart(timeSegments, postCount, pageCount, strDivId, strTitle, arrLabels) {
     jQuery(function ($) {
-
-        // Can specify a custom tick Array.
-        // Ticks should match up one for each y value (category) in the series.
-        $('#chartPostCount').empty();
-
-        $.jqplot('chartPostCount', [postCount, pageCount], {
+        //TODO iterate over series
+        $.jqplot(strDivId, [postCount, pageCount], {
             // The "seriesDefaults" option is an options object that will
             // be applied to all series in the chart.
-            title: 'Number of Blogposts',
+            title: strTitle,
             seriesDefaults: {
                 renderer: $.jqplot.BarRenderer,
                 pointLabels: {show: true},
@@ -39,8 +46,8 @@ function barChart(years, postCount, pageCount) {
                 }
             },
             series: [
-                {label: 'Posts'},
-                {label: 'Pages'}
+                {label: arrLabels[0]},
+                {label: arrLabels[1]}
             ],
 
             legend: {
@@ -60,7 +67,7 @@ function barChart(years, postCount, pageCount) {
                     min: 0,
                     max: Math.max(postCount) + Math.max(postCount) * 0.15,
                     renderer: $.jqplot.CategoryAxisRenderer,
-                    ticks: years
+                    ticks: timeSegments
                 },
                 // Pad the y axis just a little so bars can get close to, but
                 // not touch, the grid boundaries.  1.2 is the default padding.

@@ -1,0 +1,42 @@
+#br_options_box {
+    position: relative;
+    overflow: auto;
+    margin-bottom: 1.5em;
+    padding: 0.6em;
+    border: 1px solid #e5e5e5;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    background: #fff;
+    font-size: 13px;
+    line-height: 2.1em;
+}
+
+#br_options_box h3 {
+    margin: 0.2em;
+    font-weight: normal;
+}
+
+#timeSegmentForm {
+    float: left;
+    width: 200px;
+    height: 100px;
+    margin-right: 15px;
+}
+
+#br_check_boxes {
+    float: left;
+    width: 250px;
+    height: 100px;
+    margin-right: 15px;
+    line-height: 1em;
+    border: 1px dashed #c0c0c0;
+}
+
+.clear {
+    clear: left;
+}
+
+#br_check_boxes > form > p {
+    padding-left: 2px;
+    margin-bottom: 0.3em;
+}
