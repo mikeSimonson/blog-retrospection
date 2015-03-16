@@ -45,6 +45,8 @@ function embedScriptsAndStyle()
 {
     wp_enqueue_script('jqplot', plugins_url('js/jqplot/jquery.jqplot.min.js', __FILE__), array('jquery'));
     wp_enqueue_script('jqplot_barRenderer', plugins_url('js/jqplot/plugins/jqplot.barRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('jqplot_canvasTicks', plugins_url('js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('jqplot_canvasText', plugins_url('js/jqplot/plugins/jqplot.canvasTextRenderer.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_axisRenderer', plugins_url('js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_pointLabels', plugins_url('js/jqplot/plugins/jqplot.pointLabels.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('br_main', plugins_url('js/blog_retrospection.js', __FILE__), array('jquery', 'jqplot'));
@@ -111,8 +113,8 @@ function createOptionsBox()
      </form>
      <div id="br_check_boxes">
      <form>
-     <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount"/><br /></p>
-     <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth"/><br /></p>
+     <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount" onChange="checkEvents()"/><br /></p>
+     <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth" onChange="checkEvents()"/><br /></p>
      </form>
      </div>
      <div class="clear"></div>';
@@ -123,8 +125,8 @@ function createOptionsBox()
 function createGraphDivs()
 {
     echo '
-        <div id="chartPostCount" style="height:300px;width:400px; "></div>
-        <div id="chartPostsPerMonth" style="height:300px;width:400px; "></div>
+        <div id="chartPostCount" style="height:350px;width:400px; "></div>
+        <div id="chartPostsPerMonth" style="height:350px;width:400px; "></div>
         ';
 }
 
