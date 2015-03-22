@@ -57,8 +57,7 @@ function embedScriptsAndStyle()
 
 function api_getTimeSegmentData()
 {
-
-    $intTimeSegment = intval($_POST['timeSegment']);
+    $intTimeSegment = (int)($_POST['timeSegment']);
 
     echo getTimeSegmentData($intTimeSegment);
 
@@ -112,10 +111,8 @@ function createOptionsBox()
         <select id="timeSegmentDropDown" onchange="timeSegmentSelected();">' . getTimeSegmentsForDropDown() . '</select>
      </form>
      <div id="br_check_boxes">
-     <form>
      <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount" onChange="checkEvents()"/><br /></p>
      <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth" onChange="checkEvents()"/><br /></p>
-     </form>
      </div>
      <div class="clear"></div>';
 
