@@ -111,8 +111,8 @@ function createOptionsBox()
         <select id="timeSegmentDropDown" onchange="timeSegmentSelected();">' . getTimeSegmentsForDropDown() . '</select>
      </form>
      <div id="br_check_boxes">
-     <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount" onChange="checkEvents()"/><br /></p>
-     <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth" onChange="checkEvents()"/><br /></p>
+     <p>' . __('Post and page count', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostCount" onChange="drawSelectedCharts()"/><br /></p>
+     <p>' . __('Posts per Month', 'blog-retrospection') . ':<input type="checkbox" id="checkboxPostPerMonth" onChange="drawSelectedCharts()"/><br /></p>
      </div>
      <div class="clear"></div>';
 
@@ -122,8 +122,8 @@ function createOptionsBox()
 function createGraphDivs()
 {
     echo '
-        <div id="chartPostCount" style="height:350px;width:400px; "></div>
-        <div id="chartPostsPerMonth" style="height:350px;width:400px; "></div>
+        <div id="chartPostCount"></div>
+        <div id="chartPostsPerMonth"></div>
         ';
 }
 

@@ -57,14 +57,20 @@ function drawSelectedCharts() {
 }
 
 function emptyAllCharts() {
-    jQuery('#chartPostCount').empty();
-    jQuery('#chartPostsPerMonth').empty();
+
+    var arrDivContainer = ['#chartPostCount', '#chartPostsPerMonth'];
+
+    for (var i = 0; i < arrDivContainer.length; i++) {
+        //remove content from container
+        jQuery(arrDivContainer[i]).empty();
+        // set size to 0
+        jQuery(arrDivContainer[i]).css({
+            height: '0px',
+            width: '0px'
+        });
+    }
 }
 
-function checkEvents() {
-    jQuery('input[type="checkbox"]').change(function (event) {
-    });
-}
 
 function getSelectedChartCheckBoxes() {
     var selected = [];
@@ -78,17 +84,27 @@ function getSelectedChartCheckBoxes() {
 
 function timeSegmentSelected() {
     var intTimeSegment = jQuery('#timeSegmentDropDown').val();
-    jQuery('#checkboxPostCount').prop('checked', true);
+    if (getSelectedChartCheckBoxes().length === 0) {
+        jQuery('#checkboxPostCount').prop('checked', true);
+    }
     this.objBR = new BlogRetrospection();
     this.objBR.setTimeSegment(intTimeSegment);
 }
 
 function postCountChart(timeSegments, postCount, pageCount) {
-    stackedBarChart(timeSegments, [postCount, pageCount], 'chartPostCount', 'Number of Blogposts', ['Posts', 'Pages'])
+    jQuery('#chartPostCount').css({
+        height: '350px',
+        width: '400px'
+    });
+    stackedBarChart(timeSegments, [postCount, pageCount], 'chartPostCount', 'Number of Blog Posts', ['Posts', 'Pages'])
 }
 
-
 function postsPerMonthChart(timeSegments, postsPerMonth) {
+    jQuery('#chartPostsPerMonth').css({
+        height: '350px',
+        width: '400px'
+    });
+
     var arrXyValues = [];
     for (var i = 0; i < postsPerMonth.length; i++) {
         switch (parseInt(postsPerMonth[i].postmonth)) {
@@ -133,9 +149,10 @@ function postsPerMonthChart(timeSegments, postsPerMonth) {
     barChart('chartPostsPerMonth', arrXyValues, 'Number of Posts per Month', ['Posts'])
 }
 
-function barChart(strDivId, arrXyValues) {
+function barChart(strDivId, arrXyValues, strTitle) {
 
     jQuery.jqplot(strDivId, [arrXyValues], {
+        title: strTitle,
         series: [{renderer: jQuery.jqplot.BarRenderer}],
         axesDefaults: {
             tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
