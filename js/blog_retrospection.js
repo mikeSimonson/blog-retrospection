@@ -34,9 +34,8 @@ function BlogRetrospection() {
             drawSelectedCharts();
         });
     }
-
-
 }
+
 function drawSelectedCharts() {
     var brData = this.objBR.getResponse();
     var intTimeSegment = this.objBR.getTimeSegment();
@@ -146,14 +145,26 @@ function postsPerMonthChart(timeSegments, postsPerMonth) {
                 break;
         }
     }
-    barChart('chartPostsPerMonth', arrXyValues, 'Number of Posts per Month', ['Posts'])
+    barChart('chartPostsPerMonth', arrXyValues, 'Number of Posts per Month', 'Posts')
 }
 
-function barChart(strDivId, arrXyValues, strTitle) {
+function barChart(strDivId, arrXyValues, strTitle, strLegendTitle) {
 
     jQuery.jqplot(strDivId, [arrXyValues], {
         title: strTitle,
-        series: [{renderer: jQuery.jqplot.BarRenderer}],
+        series: [{
+            label: strLegendTitle,
+            renderer: jQuery.jqplot.BarRenderer
+        }],
+        legend: {
+            show: true,
+            placement: 'outsideGrid'
+        },
+        highlighter: {
+            show: true,
+            tooltipAxes: 'y',
+            sizeAdjust: 7.5
+        },
         axesDefaults: {
             tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
             tickOptions: {
@@ -177,50 +188,51 @@ function barChart(strDivId, arrXyValues, strTitle) {
 }
 
 function stackedBarChart(timeSegments, arrSeries, strDivId, strTitle, arrLabels) {
-    jQuery(function ($) {
-
-        $.jqplot(strDivId, arrSeries, {
-            // The "seriesDefaults" option is an options object that will
-            // be applied to all series in the chart.
-            title: strTitle,
-            stackSeries: true,
-            seriesDefaults: {
-                renderer: $.jqplot.BarRenderer,
-                pointLabels: {show: true},
-                rendererOptions: {
-                    barMargin: 60,
-                    fillToZero: true,
-                    highlightMouseOver: true,
-                    varyBarColor: false
-                }
-            },
-            series: [
-                {label: arrLabels[0]},
-                {label: arrLabels[1]}
-            ],
-
-            legend: {
-                show: true,
-                placement: 'outsideGrid'
-            },
-            axes: {
-                // Use a category axis on the x axis and use our custom ticks.
-                xaxis: {
-                    min: 0,
-                    renderer: $.jqplot.CategoryAxisRenderer,
-                    pad: 1.15,
-                    ticks: timeSegments
-                },
-                // Pad the y axis just a little so bars can get close to, but
-                // not touch, the grid boundaries.  1.2 is the default padding.
-                yaxis: {
-                    min: 0,
-                    //max: intMax ,
-                    pad: 1.15,
-                    tickOptions: {formatString: '%d'}
-                }
+    jQuery.jqplot(strDivId, arrSeries, {
+        // The "seriesDefaults" option is an options object that will
+        // be applied to all series in the chart.
+        title: strTitle,
+        stackSeries: true,
+        seriesDefaults: {
+            renderer: jQuery.jqplot.BarRenderer,
+          //  pointLabels: {show: true},
+            rendererOptions: {
+                barMargin: 60,
+                fillToZero: true,
+                highlightMouseOver: true,
+                varyBarColor: false
             }
-        });
+        },
+        series: [
+            {label: arrLabels[0]},
+            {label: arrLabels[1]}
+        ],
+        highlighter: {
+            show: true,
+            tooltipAxes: 'y',
+            sizeAdjust: 7.5
+        },
+
+        legend: {
+            show: true,
+            placement: 'outsideGrid'
+        },
+        axes: {
+            // Use a category axis on the x axis and use our custom ticks.
+            xaxis: {
+                min: 0,
+                renderer: jQuery.jqplot.CategoryAxisRenderer,
+                pad: 1.15,
+                ticks: timeSegments
+            },
+            // Pad the y axis just a little so bars can get close to, but
+            // not touch, the grid boundaries.  1.2 is the default padding.
+            yaxis: {
+                min: 0,
+                pad: 1.15,
+                tickOptions: {formatString: '%d'}
+            }
+        }
     });
 }
 

@@ -48,6 +48,7 @@ function embedScriptsAndStyle()
     wp_enqueue_script('jqplot_canvasTicks', plugins_url('js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_canvasText', plugins_url('js/jqplot/plugins/jqplot.canvasTextRenderer.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_axisRenderer', plugins_url('js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js', __FILE__), array('jqplot'));
+    wp_enqueue_script('jqplot_highlighter', plugins_url('js/jqplot/plugins/jqplot.highlighter.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('jqplot_pointLabels', plugins_url('js/jqplot/plugins/jqplot.pointLabels.min.js', __FILE__), array('jqplot'));
     wp_enqueue_script('br_main', plugins_url('js/blog_retrospection.js', __FILE__), array('jquery', 'jqplot'));
     wp_enqueue_style('jqplot_style', plugins_url('css/jquery.jqplot.min.css', __FILE__));
@@ -88,13 +89,13 @@ function addMenus()
 function getTimeSegmentsForDropDown()
 {
     global $wpdb;
-    $times = $wpdb->get_results(
+    $arrTimes = $wpdb->get_results(
         "SELECT DISTINCT year(post_date) as years FROM $wpdb->posts WHERE post_status='publish' ORDER BY years DESC; "
     );
 
     $timeSegments = "";
 
-    foreach ($times as $option) {
+    foreach ($arrTimes as $option) {
         $timeSegments = $timeSegments . '<option value="' . $option->years . '">' . $option->years . '</option>';
     }
 
