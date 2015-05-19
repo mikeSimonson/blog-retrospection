@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lioman/blog-retrospection.svg?branch=master)](https://travis-ci.org/lioman/blog-retrospection)
+
 ## Description
 This plugin generates a brief retrospection of your blog for a given timeframe (only year available in first release).
 
