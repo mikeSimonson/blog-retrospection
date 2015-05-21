@@ -22,8 +22,7 @@ before_script:
   - php composer.phar install --no-interaction
 
 script: 
-  - mkdir -p build/logs
-  - phpunit --coverage-clover
+  - phpunit --coverage-clover clover.xml
 
 after_script:
   - php vendor/bin/coveralls -v
