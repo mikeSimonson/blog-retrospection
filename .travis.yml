@@ -21,8 +21,9 @@ before_script:
   - curl -s http://getcomposer.org/installer | php
   - php composer.phar install --no-interaction
 
-script: 
-  - phpunit --coverage-clover clover.xml
+script:
+  - mkdir -p build/logs
+  - phpunit --coverage-clover build/logs/clover.xml
 
 after_script:
   - php vendor/bin/coveralls -v
